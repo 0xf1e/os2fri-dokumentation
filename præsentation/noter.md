@@ -52,17 +52,19 @@
 ### Standard infrastruktur
 
 - GitOps-udvikling vs. GitOps-konfigurationsstyring
-  - I forbindelse med et GitOps-mandat kan vi måske pålægge det ene, men ikke det andet.
+  - I forbindelse med et GitOps-mandat kan vi måske pålægge det ene, men ikke det andet. (At implementere systemet uden GitOps kræver dog yderliggående research og vil ikke nødvendigvis lykkes.)
 - Forge
   - Dette er en runtime-afhængighed; suverænitet er afgørende.
 - Base-OS / Opdateringsflow / Beslutninger
   - Opdateringer i core-OS-laget risikerer stort båndbreddeforbrug og ustabilitet. Hvor meget kontrol ønsker vi over udrulningen af core-OS-programmer?
+    -> vi anbefaler at man klassificerer sine afhængigheder efter hvor ofte de skal opdateres. så kan man designe sine OS-lag efter hvor tit der sker opdateringer
 - IDENTITETSSTYRING / SIGNEREDE COMMITS
 
 ### Standard-OS + software
 
 - Brugerisolation vs. Administration
   - Sikkerhedsudfordring: hvordan lader vi administratorer udføre deres arbejde uden samtidig at åbne døren for angreb?
+    -> vi bør analysere om der overhovedet findes specifikke administrationsopgaver, som ikke kan klares gennem reconciliation
 - OS-deklaration er fælles anliggende – hvorfor?
   - Vi har besluttet, at valget af OS-deklarationsteknologi bliver en del af OS2base. Det betyder, at der skal tages stilling til bootc vs. nix.
   - Projekter kan overskrive vores OS-deklaration – helt ned til at bruge en anden basisteknologi – men det kræver en indsats fra deres side.
