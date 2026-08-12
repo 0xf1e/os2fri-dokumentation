@@ -3,6 +3,10 @@ marp: true
 theme: default
 paginate: true
 ---
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
 
 # Admin and User Experience
 
@@ -14,6 +18,35 @@ Problems:
 - How do we handle hardware compatibility and hardware choice?
 - Which regulatory requirements are relevant for UI choices?
 - How do we ensure we get user input early and where it matters?
+
+---
+
+# Which actors are relevant to the system? (example)
+
+<div style="display: flex; align-items: center; gap: 40px;">
+
+<div style="flex: 1;">
+
+## Recommendations
+
+- Consider A, B, C
+- Prioritize xyz
+
+## Trade-offs
+
+- If A, then this will mean B
+
+</div>
+
+<div class="mermaid" style="flex: 1">
+flowchart LR
+    A --> System
+    System --> B
+    C --> D
+    D --> System
+</div>
+
+</div>
 
 ---
 
