@@ -21,18 +21,18 @@ Problems:
 
 ---
 
-# Which actors are relevant to the system? (example)
+## Which actors are relevant to the system? (example)
 
 <div style="display: flex; align-items: center; gap: 40px;">
 
 <div style="flex: 1;">
 
-## Recommendations
+### Recommendations
 
 - Consider A, B, C
 - Prioritize xyz
 
-## Trade-offs
+### Trade-offs
 
 - If A, then this will mean B
 
@@ -73,6 +73,12 @@ Problems:
 - How do we isolate administration access from daily user access rights?
 - How do we handle software updates?
 - How do we allow individual instances to customize their installation?
+
+---
+
+## OS2Fri DSL
+
+<https://example.com>
 
 ---
 
