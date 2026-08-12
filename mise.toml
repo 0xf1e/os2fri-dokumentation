@@ -1,0 +1,8 @@
+[tasks]
+build = """
+mkdir -p ./public
+marp ./presentation/slides.md -o ./public/index.html
+"""
+
+[tools]
+marp-cli = "4.5.0"
