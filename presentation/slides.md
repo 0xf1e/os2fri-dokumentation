@@ -76,7 +76,7 @@ Problems:
 
 ---
 
-## OS2Fri DSL
+## OS2Fri Domain Model
 
 <https://example.com>
 
