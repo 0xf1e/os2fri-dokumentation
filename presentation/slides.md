@@ -14,7 +14,7 @@ Hvordan får vi en maskine i en bestemt tilstand?
 
 ### Mønster A: Agent som administratorens "forlængede arm"
 
-<!-- Mønster A: En maskine-agent fungerer som administratorens "forlængede arm" og kører kode, der er besluttet af et centralt administratorkontrolleret system -->
+<!-- Mønster A: En agent på maskinen fungerer som administratorens "forlængede arm" og kører kode, der er fastlagt af et centralt system under administratorens kontrol -->
 
 <div class="mermaid">
 flowchart LR
@@ -30,7 +30,7 @@ flowchart LR
 
 ### Mønster B: Standardiserede deklarationer
 
-<!--Mønster B: En ønsket maskintilstand for en hel flåde af maskiner defineres. Maskinen peges på den rette maskintilstandskanal og holder derefter sig selv opdateret i forhold til maskintilstandskanalen.
+<!--Mønster B: En ønsket maskintilstand for en hel flåde af maskiner defineres. Maskinen konfigureres til at følge den rette maskintilstandskanal og holder sig derefter opdateret via kanalen.
 -->
 
 <div class="mermaid">
@@ -38,9 +38,9 @@ flowchart LR
     subgraph Machine ["Maskine"]
         Updater[opdateringsprogram]
     end
-    Updater -->|erstatter system på| Machine
-    Updater -->|henter seneste deklaration fra| ImageStream[image stream]
-    Admin(("admin")) -->|opdaterer deklaration på| ImageStream
+    Updater -->|erstatter systemet på| Machine
+    Updater -->|henter den seneste deklaration fra| ImageStream[image stream]
+    Admin(("admin")) -->|opdaterer deklarationen i| ImageStream
 </div>
 
 -> Vi anbefaler Mønster B.
@@ -48,31 +48,31 @@ flowchart LR
 **Hvorfor?** Pålidelighed, Sikkerhed, Effektiv drift, Lovgivningsmæssig efterlevelse, Driftskontinuitet
 
 <!--
-Vi vælger at undgå at bruge Mønster A. I stedet udvider vi Mønster B, så det løser alle de problemer, der er relevante for os2fri, og som kræver interaktion med individuelle maskiner.
+Vi fravælger Mønster A. I stedet udvider vi Mønster B, så det løser alle de problemer, der er relevante for os2fri, og som kræver interaktion med individuelle maskiner.
 
 **Hvorfor?**
 - sikrer, at der er en godkendt systemtilstand, som er beskrevet ét sted (single source of truth) -> leverer på Pålidelighed, Sikkerhed, Effektiv drift, Lovgivningsmæssig efterlevelse, Driftskontinuitet
 vi vil undgå:
 - maskiner begynder at afvige lidt fra hinanden på måder, som kun den person, der udførte ændringen, forstår
-- udokumenterede ændringer af visse maskiner forårsager kompatibilitetsproblemer ved opdatering
-- uautoriserede aktører bryder ind i den almægtige aktør og udfører farlige ændringer af systemet
+- udokumenterede ændringer på nogle maskiner forårsager kompatibilitetsproblemer ved opdatering
+- uautoriserede aktører kompromitterer den aktør, der har fuld kontrol, og foretager farlige ændringer i systemet
 - viden om, hvordan systemer fungerer, går tabt, når kommuner skifter leverandør, eller nøglemedarbejdere skifter job
 vi vil have:
 - enhver maskine kan bringes tilbage til sin ønskede tilstand
-- det er nemt at indsamle dokumentation for, hvilken software der kører på flåden, og hvordan den er konfigureret
+- det er nemt at indsamle dokumentation for, hvilken software der kører på maskinerne i flåden, og hvordan den er konfigureret
 
 Vi vil nu beskrive, hvordan vi løser individuelle problemer inden for rammerne af Mønster B.
 -->
 
 ---
 
-# Bemærkning om problemspekulationer
+# Forbehold om de beskrevne problemer
 
 Et softwaresystem bør designes til at løse specifikke problemer.
-Under designprocessen for os2fri var en Product Owner fra et relateret projekt en del af teamet, men ellers var vi ikke i stand til at tale med de faktiske deltagere i systemet.
-Derfor _spekulerer_ vi over, hvilke problemer der er vigtige nok til at blive diskuteret her.
+Under designprocessen for os2fri deltog en Product Owner fra et relateret projekt i teamet, men ellers havde vi ikke mulighed for at tale med systemets faktiske aktører.
+Derfor må vi _gætte på_, hvilke problemer der er vigtige nok til at behandle her.
 
-Under den faktiske udvikling skal brugerrepræsentanter inddrages, så de reelle problemer kan undersøges og prioriteres.
+Under selve udviklingen skal brugerrepræsentanter inddrages, så de reelle problemer kan undersøges og prioriteres.
 
 <!-- Mens vi tænkte over, hvordan os2base skulle implementeres, fremstod følgende problemer som vigtige nok til at håndtere tidligt: -->
 
@@ -92,7 +92,7 @@ Under den faktiske udvikling skal brugerrepræsentanter inddrages, så de reelle
 
 ## Løsningsdesign
 
-<!--Vi definerer grupper af maskiner med lignende konfigurationer således: systemdeklarationer arver fra hinanden, og undersystemer af eksisterende systemer kan defineres -->
+<!--Vi definerer grupper af maskiner med lignende konfigurationer på følgende måde: Systemdeklarationer kan arve fra andre systemdeklarationer, og der kan defineres undersystemer af eksisterende systemer. -->
 
 Eksempel: Indskolings-PC hos Aarhus Kommune:
 
@@ -106,6 +106,7 @@ flowchart LR
         OS2SkolePcDecl["OS2SkolePC\n(deklaration)"]
     end
     subgraph ownerAarhus ["Aarhus Kommune"]
+        direction TB
         SkoleAtAarhusDecl["Skole@Aarhus\n(deklaration)"]
         IndskolingAtAarhusDecl["Indskoling@Aarhus\n(deklaration)"]
     end
@@ -124,6 +125,7 @@ For at undgå at ende med én deklaration pr. maskine:
 <div class="mermaid">
 flowchart LR
     subgraph Machine ["Maskine"]
+        direction TB
         guaranteed["Konfigurationsafstemt tilstand"]
         compartment["Brugertilføjelser"]
     end
@@ -132,7 +134,7 @@ flowchart LR
 <!-- Administratoren kan tillade slutbrugeren at _udvide_ det eksisterende system, for eksempel ved at tilføje softwareinstallationer, men ikke at _fjerne_ dele af den konfigurationsafstemte tilstand.
 
 Eksempel: Bruger "Jeg vil gerne kunne installere software, der er relevant for mit brugsscenarie"
-Løsning: Lever en liste over apps, der må installeres på systemet. Disse apps må ikke ændre nogen af de parametre, som administratoren er afhængig af (der findes eksisterende sandbox-løsninger til dette)
+Løsning: Stil en liste over apps, der må installeres på systemet, til rådighed. Disse apps må ikke ændre nogen af de parametre, som administratoren er afhængig af (der findes allerede sandbox-løsninger til dette)
 -->
 
 ### Referencemønster
@@ -147,11 +149,11 @@ flowchart LR
 </div>
 
 <!-- Et andet eksempel: Bruger "Jeg vil gerne kunne bruge den rigtige printer på mit kontor"
-Løsning: Gør systemet uafhængigt af, hvilken specifik printer en bruger anvender. En maskine kan få adgang til en lang liste over printere, og potentielle rettigheder håndteres på printer-/netværksniveau. -->
+Løsning: Gør systemet uafhængigt af, hvilken specifik printer en bruger anvender. En maskine kan få adgang til en lang liste over printere, og eventuelle adgangsrettigheder håndteres på printer- eller netværksniveau. -->
 
 ---
 
-# Problem: Hvordan kender vi flådens tilstand?
+# Problem: Hvordan ved vi, hvilken tilstand flåden er i?
 
 <!--
 👸 Slutbruger
@@ -160,24 +162,24 @@ Løsning: Gør systemet uafhængigt af, hvilken specifik printer en bruger anven
 -->
 
 👸 "Av, computeren på biblioteket er lige gået ned! Forhåbentlig bliver nogen hurtigt informeret om det."
-👩‍💼 "Nogen har opsat et falsk wi-fi på vores kontor! Heldigvis kan jeg slå op, hvilke netværk maskinerne på kontoret har forbundet til."
-🧑‍💻 "Efter vores seneste opdatering har nogle folk klaget over problemer med printerforbindelsen. Men for at finde ud af, hvad der er galt, har jeg virkelig brug for at se, hvilke fejl folk får på deres computere."
+👩‍💼 "Nogen har opsat et falsk wi-fi-netværk på vores kontor! Heldigvis kan jeg slå op, hvilke netværk maskinerne på kontoret har været forbundet til."
+🧑‍💻 "Efter vores seneste opdatering har nogle klaget over problemer med printerforbindelsen. Men for at finde ud af, hvad der er galt, har jeg virkelig brug for at se, hvilke fejl folk får på deres computere."
 
 ---
 
 ## Løsningsdesign
 
 <!--
-- hver maskine eksponerer standardiseret observationsdata
+- hver maskine stiller standardiserede observationsdata til rådighed
 - der findes et centralt observationssystem, der indsamler alle disse data
 - observationsdata konverteres til et standardiseret format
 
-Så bliver informationsflowet:
+Informationsflowet bliver således:
 -->
 
 <div class="mermaid">
 flowchart LR
-    Machine -->|sender standardiseret brugsdata til| ObservabilitySystem[Observationssystem]
+    Machine -->|sender standardiserede brugsdata til| ObservabilitySystem[Observationssystem]
     Machine -->|henter image stream-patches fra| ImageRegistry[Image Registry]
 </div>
 
@@ -197,9 +199,9 @@ Påkrævede maskinkomponenter:
 
 Forventede problemer:
 
-🧑‍💻 "Når jeg vil ændre flådens konfiguration, ved jeg, at jeg kan finde den rette indstilling i konfigurationsgrænsefladen. Det er mit one-stop-shop for enhver form for konfiguration."
-🧑‍💻 "De bruger sikkert alverdens kompliceret teknologi til at få systemet til at fungere, men heldigvis behøver jeg ikke at lære om noget af det for at ændre konfigurationen."
-👩‍💼 "For nylig blev der installeret software på flåden, og jeg vidste ikke rigtig, hvorfor den var der. Heldigvis kunne jeg nemt tjekke, hvem der tilføjede denne konfiguration, hvem der godkendte den, og hvornår ændringen blev foretaget."
+🧑‍💻 "Når jeg vil ændre flådens konfiguration, ved jeg, at jeg kan finde den rette indstilling i konfigurationsgrænsefladen. Det er min one-stop-shop for enhver form for konfiguration."
+🧑‍💻 "De bruger sikkert alverdens komplicerede teknologi til at få systemet til at fungere, men heldigvis behøver jeg ikke at lære om noget af det for at ændre konfigurationen."
+👩‍💼 "For nylig blev der installeret software på maskinerne i flåden, og jeg vidste ikke rigtig, hvorfor den var der. Heldigvis kunne jeg nemt tjekke, hvem der tilføjede denne konfiguration, hvem der godkendte den, og hvornår ændringen blev foretaget."
 👩‍💼 "Jeg vil være sikker på, at ingen af mine medarbejdere kan ændre flådens konfiguration uden at få en anden til at gennemgå ændringen."
 
 ---
@@ -208,7 +210,7 @@ Forventede problemer:
 
 <!--
 - konfigurationsstyring er baseret på en eksisterende VCS-løsning som Git. **Hvorfor?** Denne løsning giver os sporbar historik, tilbagerulning, gennemgang og godkendelse af ændringer gratis
-- som en del af os2fri oprettes et tyndt lag oven på Git, der gør konfiguration lettere for lokale adminer
+- som en del af os2fri oprettes et tyndt lag oven på Git, der gør konfiguration lettere for lokale administratorer
 - os2base leverer UI-logikken til konfigurationsgrænsefladen og undersøger det rette visuelle/oplevelsesmæssige designsprog
 - UI-logikken konverterer et standardiseret mellemformat til en brugergrænseflade
 - de enkelte os2fri-produkter eksponerer konfigurationselementer i det standardiserede mellemformat
@@ -225,7 +227,7 @@ flowchart LR
     configurationUI -->|tilføjer til| localConfiguration
 </div>
 
-Gør Konfigurations-UI'et problemfrit på tværs af projektgrænser:
+Sådan sikres et problemfrit konfigurations-UI på tværs af projektgrænser:
 
 <div class="mermaid">
 flowchart LR
@@ -248,7 +250,7 @@ flowchart LR
 
 Forventede problemer:
 
-🧑‍💻 "Maskiner 100 til 110 følger 'børnebibliotek'-kanalen, men de skal alle være 'voksenbibliotek' nu. Jeg kan udføre denne ændring uden at skulle tage til lokationen."
+🧑‍💻 "Maskinerne med numrene 100 til 110 følger 'børnebibliotek'-kanalen, men de skal nu alle følge 'voksenbibliotek'-kanalen. Jeg kan udføre denne ændring uden at skulle tage ud til stedet."
 🧑‍💻 "Når skoleåret er slut, kan jeg nemt nulstille alle elevmaskiner til standardtilstand, så de er klar til nye elever næste år." ("Powerwash")
 
 ---
@@ -260,23 +262,24 @@ Forventede problemer:
 <div class="mermaid">
 flowchart LR
 subgraph machine["Maskine 01 (kører system-a)"]
-    systemA["system-a (kører)"]
+    systemA["system-a (kørende)"]
 end
-subgraph systemAStream["system-a seneste deklaration"]
+subgraph systemAStream["system-a – seneste deklaration"]
+    direction TB
     conf["System A-konfiguration"]
-    reset["Logik der fortæller Maskine 01 at nulstille til image system-b"]
+    reset["Logik, der får Maskine 01 til at nulstille til system-b-imaget"]
 end
 systemA -->|henter opdatering fra| systemAStream
 </div>
 
 <!--
-Specifikke manipulationsveje skal undersøges på forhånd, og derefter tilføjes logik for disse manipulationer til systemet.
+De konkrete ændringsmekanismer skal undersøges på forhånd, hvorefter den nødvendige logik tilføjes systemet.
 
-Fordi et specifikt system kun nogensinde henter den konfiguration, som andre systemer også henter, kan problemerne løses således:
+Fordi et bestemt system kun henter den konfiguration, som andre systemer også henter, kan problemerne løses således:
 
-- specifikke manipulationsveje er forudkonfigureret i imaget
-- ved hver image-opdatering downloader alle maskiner en liste, og denne liste indeholder ID'erne på de maskiner, hvorpå manipulationen skal udføres
+- de enkelte ændringsmekanismer er forudkonfigureret i imaget
+- ved hver image-opdatering downloader alle maskiner en liste, og denne liste indeholder ID'erne på de maskiner, som ændringen skal anvendes på
 - dette betyder, at hver maskine har en form for unik og uforanderlig identifikation
 
-**Vigtigt:** Pr.-maskine-ændringer flytter kun maskinen til tilstanden af en kendt, godkendt image stream.
+**Vigtigt:** Maskinspecifikke ændringer flytter kun maskinen til den tilstand, der er defineret af en kendt, godkendt image stream.
 -->
